@@ -1,0 +1,58 @@
+version: '3'
+services:
+  spark-job:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./input:/app/input
+      - ./output:/app/output
+      - ./sparklogs:/app/sparklogs
+      - ./localLogs:/app/localLogs
+      - ./jars:/app/jars
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+    depends_on:
+      - spark-master
+    networks:
+      - spark-network
+
+  spark-master:
+    image: bitnami/spark:3.1.1
+    container_name: spark-master
+    hostname: spark-master
+    environment:
+      - INIT_DAEMON_STEP=setup_spark
+    ports:
+      - "8080:8080"
+    networks:
+      - spark-network
+
+  spark-worker:
+    image: bitnami/spark:3.1.1
+    container_name: spark-worker
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+    networks:
+      - spark-network
+
+  spark-history-server:
+    image: bitnami/spark:3.1.1
+    container_name: spark-history-server
+    command: /opt/bitnami/spark/sbin/start-history-server.sh
+    volumes:
+      - ./sparklogs:/app/sparklogs
+    environment:
+      - SPARK_NO_DAEMONIZE=true
+      - SPARK_HISTORY_OPTS=-Dspark.history.fs.logDirectory=/app/sparklogs -Dspark.history.ui.port=18080 -Dspark.history.retainedApplications=50 -Dspark.ui.retainedJobs=50 -Dspark.ui.retainedStages=50 -Dspark.ui.retainedTasks=50 -Dspark.worker.ui.retainedExecutors=50 -Dspark.worker.ui.retainedDrivers=50 -Dspark.sql.ui.retainedExecutions=50 -Dspark.streaming.ui.retainedBatches=50 -Dspark.history.ui.showIncomplete=true
+    ports:
+      - "18080:18080"
+    networks:
+      - spark-network
+
+networks:
+  spark-network:
+    driver: bridge

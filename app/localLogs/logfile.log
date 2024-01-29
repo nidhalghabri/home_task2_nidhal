@@ -1,0 +1,7 @@
+2024-01-29 16:07:25,124 - utility - INFO - Creating Spark session: deltalake-ingestion
+2024-01-29 16:07:25,152 - utility - INFO - Internet is available, downloading Delta Lake package.
+2024-01-29 16:07:27,126 - utility - INFO - 
+                Reading CSV files from input
+                and saving to Delta Lake at
+                output
+2024-01-29 16:07:40,596 - utility - INFO - Data saved to Delta Lake successfully.
